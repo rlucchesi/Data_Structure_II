@@ -2,7 +2,7 @@
  *  Assignment #3, CPSC 2150
  * Student Last Name: Teles Lazaro Lucchesi
  * Student First Name: Rafael
- * Student Number: 100273456
+ * Student Number: ********
  */
 
 #include "SList.h"
