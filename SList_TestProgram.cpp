@@ -1,3 +1,10 @@
+/*
+ *  Assignment #3, CPSC 2150
+ * Student Last Name: Teles Lazaro Lucchesi
+ * Student First Name: Rafael
+ * Student Number: ********
+ */
+
 #include "SList.h"
 #include <time.h>	// used as input for the srand function
 
