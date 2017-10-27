@@ -1,9 +1,9 @@
 /*
- *  Assignment #2, CPSC 2150
- * Student Last Name: Teles Lazaro Lucchesi
- * Student First Name: Rafael
- * Student Number: *********
- */
+*  Assignment #1, CPSC 2150
+* Student Last Name: Teles Lazaro Lucchesi
+* Student First Name: Rafael
+* Student Number: 100273456
+*/
 
 #include "LList.h"
 
@@ -11,120 +11,98 @@
  * Linked List Constructor.
  */
 LList::LList() {
-	this->capacity = INITIAL_CAPACITY;
-	this->head = END;
-	this->free = 0;
-	this->data = new Node[this->capacity];
-
-	int i;
-	for (i = this->free; i < this->capacity - 1; i++) {
-		this->data[i].item = '#';
-		this->data[i].next = i + 1;
-	}
-	this->data[i].item = '#';
-	this->data[i].next = END;
-	std::cerr << "LList created\n";
+	head = nullptr;
+	std::cout << "LList created" << std::endl;
 }
 
 /*
  * Linked List Copy Constructor.
  */
 LList::LList(const LList& source) {
-	this->head = source.head;
-	this->capacity = source.capacity;
-	this->free = source.free;
-	this->data = new Node[source.capacity];
-
-	for (int i = 0; i < this->capacity; i++) {
-		this->data[i].item = source.data[i].item;
-		this->data[i].next = source.data[i].next;
-	}
+	this->head = copyAllI(source.head);
 }
 
 /*
  * Linked List Destructor.
  */
 LList::~LList() {
-	delete[] this->data;
-	this->head = END;
-	std::cerr << "Destructor invoked\n";
+	std::cerr << "Destructor invoked" << "\n";
+	this->head = deleteAllI(this->head);
 }
 
 /*
- * Overloaded Assignment operator.
+ * Linked List Assignment operator overload.
  */
 LList& LList::operator = (const LList& rtSide) {
 	if (this != &rtSide) {
-		this->deleteAll();
-		this->copyAll(rtSide);
+		this->head = deleteAllI(this->head);
+		this->head = copyAllI(rtSide.head);
 	}
 	return *this;
 }
 
 /*
- * Determines if the linked list is empty.
+ * Returns TRUE if the Linked List is empty, FALSE otherwise.
  */
 bool LList::isEmpty() const {
-	return this->head == END;
+	return this->head == nullptr;
 }
 
 /*
- * Returns the number of Nodes in the linked list.
+ * Returns the number of Nodes of a Linked List.
  */
 int LList::length() const {
-	if (this->isEmpty()) {
+	if (this->head == nullptr) {
 		return 0;
 	}
-	int output = 1;
-	int current = this->head;
-
-	while (this->data[current].next != END) {
-		output++;
-		current = this->data[current].next;
-	}
-
-	return output;
-}
-
-/*
- * Returns the number of Nodes in a linked list from a certain
- * Node p (index).
- */
-int LList::length(int p) const {
-	int current = p, output = 1;
-
-	while (this->data[current].next != END) {
-		output++;
-		current = this->data[current].next;
-	}
 	
+	Node* current = this->head;
+	int output = 0;
+
+	while (current != nullptr) {
+		output++;
+		current = current->next;
+	}
 	return output;
 }
 
 /*
- * Inserts a character at the beginning (at the front) of the
- * Linked List.
+ * Inserts a character at the beginning (at the front) of the Linked List.
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool LList::cons(char ch) {
 	try {
-		if (this->free == END) {
-			this->data = this->duplicateSize();
-		}
-		// create a variable to work with
-		int current = this->free;
-		// Update Free index
-		this->free = this->data[current].next;
-		// Actual insertion of data
-		this->data[current].item = ch;
-		this->data[current].next = this->head;
-		// Update Head index
-		this->head = current;
+		this->head = cons(ch, this->head);
+		return true;
 	}
-	catch (...) {
+	catch (const std::bad_alloc&) {
 		return false;
 	}
-	return true;
+}
+
+/*
+ * ITERATIVE: Inserts a character at the beginning (at the front) of the Linked List.
+ * Returns TRUE if successful, FALSE otherwise.
+ */
+bool LList::consI(char ch) {
+	if (ch == '\0') {
+		return false;
+	}
+	try {
+		Node* data = new Node;
+		data->item = ch;
+		if (this->head == nullptr) {
+			this->head = data;
+			data->next = nullptr;
+		}
+		else {
+			data->next = this->head;
+			this->head = data;
+		}
+		return true;
+	} catch (const std::bad_alloc&) {
+		return false;
+	}
 }
 
 /*
@@ -133,232 +111,319 @@ bool LList::cons(char ch) {
  */
 bool LList::append(char ch) {
 	try {
-		if (this->free == END) {
-			this->data = this->duplicateSize();
-		}
-		// create a variable to work with
-		int current = this->head;
-		
-		// Find the last item and update its next field
-		while (this->data[current].next != END) {
-			current = this->data[current].next;
-		}
-		this->data[current].next = this->free;
-		
-		// Work on the new Node (previously a Free node)
-		current = this->free;
-		// Update Free index
-		this->free = this->data[this->free].next;
+		this->head = append(ch, this->head);
+		return true;
+	}
+	catch (const std::bad_alloc&) {
+		return false;
+	}
+}
 
-		// Actual insertion of data
-		this->data[current].item = ch;
-		this->data[current].next = END;
-	} catch (...) {
+/*
+ * ITERATIVE: Appends a character to the end of the Linked List.
+ * Returns TRUE if successful, FALSE otherwise.
+ */
+bool LList::appendI(char ch) {
+	if (ch == '\0') {
+		return false;
+	}
+	Node* current = this->head;
+   
+   while (this->head != nullptr && current->next != nullptr) {
+      current = current->next;
+   }
+ 	try {
+		Node* data = new Node;
+		data->item = ch;
+		data->next = nullptr;
+		current->next = data;
+	}
+   catch (const std::bad_alloc&) {
 		return false;
 	}
 	return true;
 }
 
 /*
- * Deletes the first occurence of a character in the Linked List.
+ * A recursive function that deletes the first occurence of a character in the Linked List.
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool LList::remove(char ch) {
-	if (this->isEmpty()) {
-		return false;
-	}
-	
-	// variables to work with
-	int previous, current;
-	current = this->head;
-
-	// search for the item to be removed
-	while (current != END && this->data[current].item != ch) {
-		previous = current;
-		current = this->data[current].next;
-	}
-
-	// item not found
-	if (current == END) {
+	if (this->head == nullptr || ch == '\0') {
 		return false;
 	}
 
-	// item found. Update head and free indices accordingly
-	if (current == this->head) {
-		this->head = this->data[current].next;
-		this->data[current].next = this->free;
-		this->free = current;
-		this->data[current].item = '#';
+	if (this->head->item == ch) {
+		Node* nextNode = this->head->next;
+		delete this->head;
+		this->head = nextNode;
+		return true;
+	}
+
+	return remove(ch, this->head);
+}
+
+/*
+ * A helper function associated with the recursive function LList::remove(char).
+ */
+bool LList::remove(char ch, Node* current) {
+	if (current == nullptr) {
+		return false;
+	}
+
+	Node* nextNode = current->next;
+
+	if (nextNode != nullptr && nextNode->item == ch) {
+		Node* tmpPtr = nextNode->next;
+		delete nextNode;
+		current->next = tmpPtr;
+		return true;
+	}
+	else {
+		return remove(ch, nextNode);
+	}
+}
+
+/*
+ * ITERATIVE: Deletes the first occurence of a character in the Linked List.
+ * Returns TRUE if successful, FALSE otherwise.
+ */
+bool LList::removeI(char ch) {
+	if (this->head == nullptr || ch == '\0') {
+		return false;
+	}
+
+	Node* current = this->head;
+	Node* previous;
+
+	if (current->item == ch) {
+		this->head = current->next;
+		delete current;
 	} else {
-		this->data[previous].next = this->data[current].next;
-		this->data[current].next = this->free;
-		this->data[current].item = '#';
-		this->free = current;
+		do {
+			previous = current;
+			current = current->next;
+		} while (current != nullptr && current->item != ch);
+
+		if (current != nullptr) {
+			previous->next = current->next;
+			delete current;
+		} else {
+			return false;
+		}
 	}
 	return true;
 }
 
+
 /*
- * Searchs for a character in the Linked List.
+ * A recursive function that searchs for a character in the Linked List.
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool LList::found(char ch) const {
-	if (this->isEmpty()) {
+	if (ch == '\0') {
+		return false;
+	}
+	return found(ch, this->head);
+}
+
+/*
+ * A helper function associated with the recursive function LList::found(char).
+ */
+bool LList::found(char ch, Node* current) const {
+	if (current == nullptr) {
+		return false;
+	}
+	if (current->item == ch) {
+		return true;
+	}
+	else {
+		return found(ch, current->next);
+	}
+}
+
+/*
+ * ITERATIVE: Searchs for a character in the Linked List.
+ * Returns TRUE if successful, FALSE otherwise.
+ */
+bool LList::foundI(char ch) const {
+	if (ch == '\0' || this->head == nullptr) {
 		return false;
 	}
 
-	int current = this->head;
+	Node* current = this->head;
 
-	while (current != END) {
-		if (this->data[current].item == ch) {
+	while (current != nullptr) {
+		if (current->item == ch) {
 			return true;
 		}
-		current = this->data[current].next;
+		current = current->next;
 	}
 	return false;
 }
 
 /*
- * Returns the first element of the Linked List and sets its boolean
- * parameter to TRUE. If the list is empty, the function returns
+ * The function returns the first element of the Linked List and sets
+ * its boolean parameter to TRUE. If the list is empty, the function returns
  * the character '\0' and sets its boolean parameter to FALSE.
  */
-char LList::getFirst(bool &hasFirst) const {
-	if (this->isEmpty()) {
+char LList::getFirst(bool& hasFirst) const {
+	if (this->head == nullptr) {
 		hasFirst = false;
 		return '\0';
 	}
-	hasFirst = true;
-	return this->data[this->head].item;
+	else {
+		hasFirst = true;
+		return this->head->item;
+	}
 }
 
 /* 
  * Reverses the linked list.
+ * The function does not take arguments nor does it return a value.
  */
 void LList::reverse() {
-	if (this->isEmpty()) {
-		return;
-	}
 	bool headSaved = false;
-	int current, previous, headIndex;
+	Node* current;
+	Node* previous;
+	Node* headPtr;
 
-	while (this->data[this->head].next != END) {
+	while (this->head->next != nullptr) {
 		current = this->head;
-		while (this->data[current].next != END) {
+		while (current->next != nullptr) {
 			previous = current;
-			current = this->data[current].next;
+			current = current->next;
 		}
-		this->data[current].next = previous;
-		this->data[previous].next = END;
+		current->next = previous;
+		previous->next = nullptr;
 		if (!headSaved) {
 			headSaved = true;
-			headIndex = current;
+			headPtr = current;
 		}
 	}
-	this->head = headIndex;
+	this->head = headPtr;
 }
 
 /*
  * Prints the linked list to standard output (from beginning to end).
- * The output starts with a '[' and finishes with a ']' followed by
- * an end-of-line.
+ * The output starts with a '[' and finishes with a ']' followed by an end-of-line.
  */
 void LList::print() const {
-	if (this->isEmpty()) {
-		std::cerr << "[]" << std::endl;
-	} else {
-		std::string output = "";
-		int current = this->head;
-
-		do {
-			output += this->data[current].item;
-			current = this->data[current].next;
-		} while (current != END);
-
-		std::cerr << "[" << output << "]" << std::endl;
+	Node* current = this->head;
+	std::string output = "";
+	for (int i = 0; i < this->length(); i++) {
+		output += current->item;
+		current = current->next;
 	}
-	#ifndef NDEBUG
-	this->dumpNodesArray();
-	#endif
+
+	std::cout << "[" << output << "]" << std::endl;
 }
 
 /*
- * Duplicates the size of the Array holding the Linked List.
- * The function might throw bad_alloc exception; however, it will only
- * be called inside a try catch block.
+ * A recursive function that deletes the complete linked list.
  */
-LList::Node* LList::duplicateSize() {
-	// create output array
-	Node* output = new Node[this->capacity * 2];
-
-	// after making sure there is enough memory to hold the new array
-	// update free array index
-	this->free = this->capacity;
-	// update capacity variable
-	this->capacity = this->capacity * 2;
-
-	// copy the contents
-	for (int i = 0; i < this->free; i++) {
-		output[i].item = this->data[i].item;
-		output[i].next = this->data[i].next;
+LList::Node* LList::deleteAll(Node* current) {
+	if (current == nullptr) {
+		return nullptr;
 	}
+	Node* nextPtr = current->next;
+	delete current;
+	return deleteAll(nextPtr);
+}
 
-	// delete previous array
-	delete [] this->data;
-
-	// Organize the array of free Nodes
-	int i;
-	for (i = this->free; i < this->capacity - 1; i++) {
-		output[i].item = '#';
-		output[i].next = i + 1;
+/*
+ * ITERATIVE: Deletes the whole Linked List.
+ */
+LList::Node* LList::deleteAllI(Node* input) {
+	Node* discard;
+   while (input != nullptr) {
+	  	discard = input;
+	  	input = input->next;
+	  	delete discard;
 	}
-	output[i].item = '#';
-	output[i].next = END;
+	return input;
+}
 
+
+/*
+ * A recursive function that copies the complete linked list (making a copy with nodes in the same order).
+ */
+LList::Node* LList::copyAll(Node* p) {
+	if (p == nullptr) {
+      return nullptr;
+   }
+	return cons(p->item, copyAll(p->next));
+}
+
+/*
+ * ITERATIVE: Copies the whole Linked List by
+ * making a copy with nodes in the same order.
+ */
+LList::Node* LList::copyAllI(Node* input) {
+	Node* output = nullptr;
+   if (input != nullptr) {
+      // at least one node exists
+      output = new Node;
+      output->item = input->item;
+      output->next = nullptr;
+      input = input->next;
+
+      while (input != nullptr) {
+         // while more elements exists
+	   	output->next = new Node;
+         output = output->next;
+         output->item = input->item;
+         output->next = nullptr;
+		   input = input->next;
+	   }
+   }
 	return output;
 }
 
 /*
- * Makes a copy of a linked list (with nodes in the same order)
- * based on a existing one (argument).
+ * STATIC PRIVATE FUNCTIONS
  */
-void LList::copyAll(const LList& source) {
-	this->head = source.head;
-	this->capacity = source.capacity;
-	this->free = source.free;
-	this->data = new Node[source.capacity];
 
-	for (int i = 0; i < this->capacity; i++) {
-		this->data[i].item = source.data[i].item;
-		this->data[i].next = source.data[i].next;
+/*
+ * Returns the number of Nodes in a Linked List.
+ */
+int LList::length(Node *p) {
+	if (p == nullptr) {
+		return 0;
 	}
 
-	
+	Node* current = p;
+	int output = 0;
+
+	while (current != nullptr) {
+		output++;
+		current = current->next;
+	}
+	return output;
 }
 
 /*
- * Deletes the complete linked list.
+ * Inserts a character at the beginning (at the front)
+ * of the Linked List and returns a pointer to a Node.
  */
-void LList::deleteAll() {
-	delete [] this->data;
-	this->head = END;
+LList::Node* LList::cons(char ch, Node* current) {
+	Node* data = new Node;
+	data->item = ch;
+	data->next = current;
+	return data;
 }
 
-#ifndef NDEBUG
 /*
- * Dumps the array
+ * Recursive: appends a character to the end of the Linked List.
+ * and returns TRUE if successful, FALSE otherwise.
  */
-void LList::dumpNodesArray() const {
-	// print upper part of table and indecies values
-	printf("\n\tindex\titem\tnext\t\tHead: %2d\tFree: %2d", this->head, this->free);
-	printf("\n\t----\t---\t----");
-
-	// print each line (for loop)
-	for (int i = 0; i < this->capacity; i++) {
-		printf("\n\t %2d\t %c\t %2d", i, this->data[i].item, this->data[i].next);
+LList::Node* LList::append(char ch, Node* current) {
+	if (current == nullptr) {
+		return cons(ch, current);
 	}
-	
-	// print bottom line
-	printf("\n\t----\t---\t----\n\n");
+	else {
+		current->next = append(ch, current->next);
+		return current;
+	}
 }
-#endif
+
