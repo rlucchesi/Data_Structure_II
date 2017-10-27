@@ -2,7 +2,7 @@
  *  Assignment #3, CPSC 2150
  * Student Last Name: Teles Lazaro Lucchesi
  * Student First Name: Rafael
- * Student Number: ********
+ * Student Number: 100273456
  */
 
 
@@ -29,21 +29,19 @@ Set::Set(Node* p) {
 // precondition:
 //   p has been assigned a valid address or the nullptr
 bool Set::isEmpty() const{ 
-   return (list == nullptr); 
+   return (this->list == nullptr); 
 }
 
 // return the number of elements in the Set i.e. the
 // cardinality of the set
 int Set::size() const {
-	if (this->isEmpty()) {
-		return 0;
-	}
-	int output = 1;
-	Node* current = this->list;
-
-	while (current->next != nullptr) {
+	int output = 0;
+   if (!this->isEmpty()) {
+		Node* current = this->list;
+		while (current != nullptr) {
 		output++;
-		current = this->list->next;
+		current = current->next;
+      }
 	}
 	return output;
 }
@@ -61,19 +59,11 @@ void Set::insert(int x) {
 			previous = current;
 			current = current->next;
 		}
-		if (current == nullptr) {
-			// insert at the last position
-			Node* input = new Node;
-			input->value = x;
-			input->next = nullptr;
-			previous->next = input;
-		} else {
-			if (current->value != x) {
-				Node* input = new Node;
-				input->value = x;
-				input->next = current;
-				previous->next = input;
-			}
+		if (current == nullptr || current->value != x) {
+			//Node* input = new Node;
+         //input->value = x;
+         //input->next = current;
+			previous->next = Set::cons(x, current);
 		}
 	}
 }
@@ -82,30 +72,27 @@ void Set::insert(int x) {
  * Deletes the memory for the node with x in it.
  */
 void Set::remove(int x) {
-	if (this->isEmpty() || x < this->list->value) {
+   Node* current;
+   if (this->isEmpty() || x < this->list->value) {
 		return;
-	}
-	else {
-		// x == first || [sec, rest] || not in list
-		if (x == this->list->value) {
-			Node* discard = this->list;
-			this->list = this->list->next;
-			delete discard;
-		}
-		else {
-			Node* current = this->list->next;
-			Node* previous = this->list;
-			while (current != nullptr) {
-				if (x == current->value) {
-					Node* discard = current;
-					previous->next = current->next;
-					delete discard;
-					return;
-				}
-				previous = current;
-				current = current->next;
-			}
-		}
+	} else if (x == this->list->value) {
+      current = this->list;
+      this->list = this->list->next;
+      delete current;
+   } else {
+      Node* previous = this->list;
+      current = this->list->next;
+      while (current != nullptr && current->value < x) {
+         previous = current;
+         current = current->next;
+      }
+      if (current == nullptr || current->value != x) {
+         // item not in list
+         return;
+      } else {
+         previous->next = current->next;
+         delete current;
+      }
 	}
 }
 
